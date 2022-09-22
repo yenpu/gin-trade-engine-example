@@ -3,23 +3,26 @@ package engine
 import (
 	"time"
 
-	"github.com/yenpu/gin-trade-engine-example/domain"
-	"github.com/yenpu/gin-trade-engine-example/util"
+	"gin-trade-engine-example/domain"
+	"gin-trade-engine-example/util"
 
 	"math/rand"
 )
 
-type OrderBook struct {
+type OrderBook interface {
+	CreateOrder(order domain.Order) domain.Order
+	GetBuyOrders() []domain.Order
+	GetSellOrders() []domain.Order
+	GetTrades() []domain.Trade
+}
+
+type InMemOrderBook struct {
 	BuyOrders  []domain.Order
 	SellOrders []domain.Order
+	Trades     []domain.Trade
 }
 
-var book = OrderBook{
-	BuyOrders:  make([]domain.Order, 0, 100),
-	SellOrders: make([]domain.Order, 0, 100),
-}
-
-func (book *OrderBook) CreateOrder(order domain.Order) domain.Order {
+func (book *InMemOrderBook) CreateOrder(order domain.Order) domain.Order {
 	if order.OrderType == domain.Buy {
 		book.buy(order)
 	} else {
@@ -28,7 +31,19 @@ func (book *OrderBook) CreateOrder(order domain.Order) domain.Order {
 	return order
 }
 
-func (book *OrderBook) buy(order domain.Order) []domain.Trade {
+func (book *InMemOrderBook) ListBuyOrders() []domain.Order {
+	return book.BuyOrders
+}
+
+func (book *InMemOrderBook) GetSellOrders() []domain.Order {
+	return book.SellOrders
+}
+
+func (book *InMemOrderBook) GetTrades() []domain.Trade {
+	return book.Trades
+}
+
+func (book *InMemOrderBook) buy(order domain.Order) []domain.Trade {
 	trades := make([]domain.Trade, 0)
 	nonMatchedSellOrders := make([]domain.Order, 0)
 	n := len(book.SellOrders)
@@ -46,7 +61,7 @@ func (book *OrderBook) buy(order domain.Order) []domain.Trade {
 		}
 		if quantity > 0 {
 			book.BuyOrders = append(book.BuyOrders, order)
-			return nil
+			return trades
 		}
 	} else {
 		book.BuyOrders = append(book.BuyOrders, order)
@@ -56,7 +71,7 @@ func (book *OrderBook) buy(order domain.Order) []domain.Trade {
 	return trades
 }
 
-func (book *OrderBook) sell(order domain.Order) []domain.Trade {
+func (book *InMemOrderBook) sell(order domain.Order) []domain.Trade {
 	trades := make([]domain.Trade, 0)
 	nonMatchedBuyOrders := make([]domain.Order, 0)
 	n := len(book.BuyOrders)
@@ -74,7 +89,7 @@ func (book *OrderBook) sell(order domain.Order) []domain.Trade {
 		}
 		if quantity > 0 {
 			book.SellOrders = append(book.SellOrders, order)
-			return nil
+			return trades
 		}
 	} else {
 		book.SellOrders = append(book.SellOrders, order)
@@ -94,7 +109,7 @@ func getCurrentMarketPrice() int64 {
 }
 
 func FillInOrder(order domain.Order) domain.Order {
-	if order.ID != "" {
+	if order.ID == "" {
 		order.ID = util.GetUUID()
 	}
 	if order.PriceType == domain.MarketPrice {

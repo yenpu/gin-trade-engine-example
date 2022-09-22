@@ -1,14 +1,14 @@
 package engine
 
 import (
-	"github.com/yenpu/gin-trade-engine-example/domain"
+	"gin-trade-engine-example/domain"
 
 	"testing"
 	"time"
 )
 
 func TestBuy(t *testing.T) {
-	book := OrderBook{
+	book := InMemOrderBook{
 		BuyOrders:  make([]domain.Order, 0, 100),
 		SellOrders: produceLimitSellOrders(),
 	}
@@ -21,7 +21,7 @@ func TestBuy(t *testing.T) {
 }
 
 func TestSell(t *testing.T) {
-	book := OrderBook{
+	book := InMemOrderBook{
 		BuyOrders:  produceLimitBuyOrders(),
 		SellOrders: make([]domain.Order, 0, 100),
 	}

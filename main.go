@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/yenpu/gin-trade-engine-example/channel"
-	"github.com/yenpu/gin-trade-engine-example/controller"
+	"gin-trade-engine-example/channel"
+	"gin-trade-engine-example/controller"
 
 	"github.com/gin-gonic/gin"
 )
