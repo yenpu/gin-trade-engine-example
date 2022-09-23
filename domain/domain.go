@@ -39,6 +39,7 @@ type Order struct {
 	CreatedAt int64     `json:"createdAt"`
 }
 
+// Validate the input order
 func (order *Order) Validate() (Order, error) {
 	if _, exist := orderTypeMap[string(order.OrderType)]; !exist {
 		return *order, errors.New(`orderType should be "buy" or "sell"`)

@@ -1,3 +1,5 @@
+// Package repository implement the storage of domain objects, in this example
+// project, use the in-memory storage for simplicity.
 package repository
 
 import (

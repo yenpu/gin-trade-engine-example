@@ -1,3 +1,6 @@
+// The package engine implement the most important business logic here, the
+// engine will try to match the buy or sell depending on the order type, when
+// the order mactched, the trade would be created.
 package engine
 
 import (
@@ -34,6 +37,7 @@ func (book *InMemOrderBook) GetTrades() []domain.Trade {
 	return book.Trades
 }
 
+// Create the order by order type
 func (book *InMemOrderBook) CreateOrder(order domain.Order) domain.Order {
 	if order.OrderType == domain.Buy {
 		book.buy(order)
@@ -43,6 +47,8 @@ func (book *InMemOrderBook) CreateOrder(order domain.Order) domain.Order {
 	return order
 }
 
+// The method will try to match the buy with sell list, it allow one by to
+// match the multiple buys, and in this case the multiple trade created.
 func (book *InMemOrderBook) buy(order domain.Order) []domain.Trade {
 	trades := book.Trades
 	nonMatchedSellOrders := make([]domain.Order, 0)
@@ -75,6 +81,8 @@ func (book *InMemOrderBook) buy(order domain.Order) []domain.Trade {
 	return trades
 }
 
+// The method will try to match the sell with buy list, it allow one by to
+// match the multiple sells, and in this case the multiple trade created.
 func (book *InMemOrderBook) sell(order domain.Order) []domain.Trade {
 	trades := book.Trades
 	nonMatchedBuyOrders := make([]domain.Order, 0)
@@ -107,6 +115,7 @@ func (book *InMemOrderBook) sell(order domain.Order) []domain.Trade {
 	return trades
 }
 
+// Update the data in repositories
 func (book *InMemOrderBook) udpateRepos() {
 	buyOrderRepo := repository.GetBuyOrderRepo()
 	buyOrderRepo.UpdateAll(book.BuyOrders)
@@ -118,6 +127,7 @@ func (book *InMemOrderBook) udpateRepos() {
 	tradeRepo.UpdateAll(book.Trades)
 }
 
+// For order to get the current market price, when marketType = market
 func getCurrentMarketPrice() int64 {
 	prices := []int64{
 		100,
