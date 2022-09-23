@@ -2,11 +2,9 @@
 package channel
 
 import (
-	"fmt"
 	"gin-trade-engine-example/domain"
 	"gin-trade-engine-example/engine"
 	"gin-trade-engine-example/repository"
-	"time"
 )
 
 // Use the bufferred channel for message queue
@@ -36,9 +34,7 @@ func Listen() {
 	go func() {
 		for {
 			order := <-ch
-			fmt.Println("Receive message")
 			book.CreateOrder(order)
-			time.Sleep(8 * time.Second)
 		}
 	}()
 }

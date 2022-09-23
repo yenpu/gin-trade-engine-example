@@ -10,7 +10,11 @@ import (
 
 	"math/rand"
 	"time"
+
+	log "github.com/go-ozzo/ozzo-log"
 )
+
+var logger log.Logger
 
 type OrderBook interface {
 	CreateOrder(order domain.Order) domain.Order
@@ -39,11 +43,21 @@ func (book *InMemOrderBook) GetTrades() []domain.Trade {
 
 // Create the order by order type
 func (book *InMemOrderBook) CreateOrder(order domain.Order) domain.Order {
+	logger := log.NewLogger()
+	console := log.NewConsoleTarget()
+	logger.Targets = append(logger.Targets, console)
+	logger.Open()
+	defer logger.Close()
+
+	start := time.Now()
 	if order.OrderType == domain.Buy {
 		book.buy(order)
 	} else {
 		book.sell(order)
 	}
+
+	elapsed := time.Since(start)
+	logger.Info("order: %s took %s", order.ID, elapsed)
 	return order
 }
 
