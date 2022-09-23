@@ -11,6 +11,7 @@ func TestBuy(t *testing.T) {
 	book := InMemOrderBook{
 		BuyOrders:  make([]domain.Order, 0, 100),
 		SellOrders: produceLimitSellOrders(),
+		Trades:     make([]domain.Trade, 0, 100),
 	}
 
 	order := domain.Order{"1", "buy", "limit", 90, 1, time.Now().UnixMilli()}
@@ -20,16 +21,45 @@ func TestBuy(t *testing.T) {
 	}
 }
 
+func TestOneBuyMatchedTwoSells(t *testing.T) {
+	book := InMemOrderBook{
+		BuyOrders:  make([]domain.Order, 0, 100),
+		SellOrders: produceLimitSellOrders(),
+		Trades:     make([]domain.Trade, 0, 100),
+	}
+
+	order := domain.Order{"1", "buy", "limit", 98, 3, time.Now().UnixMilli()}
+	trades := book.buy(order)
+	if len(trades) != 2 {
+		t.Fatalf(`A buy need to match with two sells.`)
+	}
+}
+
 func TestSell(t *testing.T) {
 	book := InMemOrderBook{
 		BuyOrders:  produceLimitBuyOrders(),
 		SellOrders: make([]domain.Order, 0, 100),
+		Trades:     make([]domain.Trade, 0, 100),
 	}
 
 	order := domain.Order{"1", "sell", "limit", 107, 2, time.Now().UnixMilli()}
 	trades := book.sell(order)
 	if len(trades) == 0 || trades[0].ID == "" || trades[0].BuyID != "6" || trades[0].SellID != "1" {
 		t.Fatalf(`The sellId = %s, price = %d didn't match.`, order.ID, order.Price)
+	}
+}
+
+func TestOneSellMatchedThreeBuys(t *testing.T) {
+	book := InMemOrderBook{
+		BuyOrders:  produceLimitBuyOrders(),
+		SellOrders: make([]domain.Order, 0, 100),
+		Trades:     make([]domain.Trade, 0, 100),
+	}
+
+	order := domain.Order{"1", "sell", "limit", 99, 4, time.Now().UnixMilli()}
+	trades := book.sell(order)
+	if len(trades) != 3 {
+		t.Fatalf(`A sell need to match with three buys`)
 	}
 }
 
@@ -61,6 +91,7 @@ func produceLimitBuyOrders() []domain.Order {
 		domain.Order{"8", "buy", "limit", 99, 1, time.Now().UnixMilli()},
 		domain.Order{"9", "buy", "limit", 112, 2, time.Now().UnixMilli()},
 		domain.Order{"10", "buy", "limit", 109, 1, time.Now().UnixMilli()},
+		domain.Order{"8", "buy", "limit", 99, 1, time.Now().UnixMilli()},
 	}
 	return orders
 }

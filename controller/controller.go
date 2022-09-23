@@ -6,6 +6,7 @@ import (
 	"gin-trade-engine-example/channel"
 	"gin-trade-engine-example/domain"
 	"gin-trade-engine-example/engine"
+	"gin-trade-engine-example/repository"
 
 	"github.com/gin-gonic/gin"
 )
@@ -27,4 +28,19 @@ func CreateOrder(c *gin.Context) {
 
 	go channel.Send(order)
 	c.IndentedJSON(http.StatusCreated, order)
+}
+
+func GetBuyOrders(c *gin.Context) {
+	repo := repository.GetBuyOrderRepo()
+	c.IndentedJSON(http.StatusOK, repo.GetAll())
+}
+
+func GetSellOrders(c *gin.Context) {
+	repo := repository.GetSellOrderRepo()
+	c.IndentedJSON(http.StatusOK, repo.GetAll())
+}
+
+func GetTrades(c *gin.Context) {
+	repo := repository.GetTradeRepo()
+	c.IndentedJSON(http.StatusOK, repo.GetAll())
 }

@@ -10,8 +10,13 @@ import (
 func setupRouter() *gin.Engine {
 	r := gin.Default()
 
-	api := r.Group("/api")
+	api := r.Group("/api", gin.BasicAuth(gin.Accounts{
+		"user": "password",
+	}))
 	api.POST("/orders", controller.CreateOrder)
+	api.GET("/buys", controller.GetBuyOrders)
+	api.GET("/sells", controller.GetSellOrders)
+	api.GET("/trades", controller.GetTrades)
 
 	return r
 }
