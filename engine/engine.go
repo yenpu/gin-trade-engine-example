@@ -10,11 +10,7 @@ import (
 
 	"math/rand"
 	"time"
-
-	log "github.com/go-ozzo/ozzo-log"
 )
-
-var logger log.Logger
 
 type OrderBook interface {
 	CreateOrder(order domain.Order) domain.Order
@@ -41,28 +37,19 @@ func (book *InMemOrderBook) GetTrades() []domain.Trade {
 	return book.Trades
 }
 
-// Create the order by order type
+// CreateOrder Create the order by order type
 func (book *InMemOrderBook) CreateOrder(order domain.Order) domain.Order {
-	logger := log.NewLogger()
-	console := log.NewConsoleTarget()
-	logger.Targets = append(logger.Targets, console)
-	logger.Open()
-	defer logger.Close()
-
-	start := time.Now()
 	if order.OrderType == domain.Buy {
 		book.buy(order)
 	} else {
 		book.sell(order)
 	}
 
-	elapsed := time.Since(start)
-	logger.Info("order: %s took %s", order.ID, elapsed)
 	return order
 }
 
-// The method will try to match the buy with sell list, it allow one by to
-// match the multiple buys, and in this case the multiple trade created.
+// The method will try to match the buy with sell list, it allows one by to match
+// the multiple buys, and in this case the multiple trade created.
 func (book *InMemOrderBook) buy(order domain.Order) []domain.Trade {
 	trades := book.Trades
 	nonMatchedSellOrders := make([]domain.Order, 0)
@@ -82,7 +69,7 @@ func (book *InMemOrderBook) buy(order domain.Order) []domain.Trade {
 		if quantity > 0 {
 			book.BuyOrders = append(book.BuyOrders, order)
 			book.Trades = trades
-			book.udpateRepos()
+			book.updateRepos()
 			return trades
 		}
 	} else {
@@ -91,12 +78,12 @@ func (book *InMemOrderBook) buy(order domain.Order) []domain.Trade {
 
 	book.SellOrders = nonMatchedSellOrders
 	book.Trades = trades
-	book.udpateRepos()
+	book.updateRepos()
 	return trades
 }
 
-// The method will try to match the sell with buy list, it allow one by to
-// match the multiple sells, and in this case the multiple trade created.
+// The method will try to match the sell with buy list, it allows one by to match
+// the multiple sells, and in this case the multiple trade created.
 func (book *InMemOrderBook) sell(order domain.Order) []domain.Trade {
 	trades := book.Trades
 	nonMatchedBuyOrders := make([]domain.Order, 0)
@@ -116,7 +103,7 @@ func (book *InMemOrderBook) sell(order domain.Order) []domain.Trade {
 		if quantity > 0 {
 			book.SellOrders = append(book.SellOrders, order)
 			book.Trades = trades
-			book.udpateRepos()
+			book.updateRepos()
 			return trades
 		}
 	} else {
@@ -125,12 +112,12 @@ func (book *InMemOrderBook) sell(order domain.Order) []domain.Trade {
 
 	book.BuyOrders = nonMatchedBuyOrders
 	book.Trades = trades
-	book.udpateRepos()
+	book.updateRepos()
 	return trades
 }
 
 // Update the data in repositories
-func (book *InMemOrderBook) udpateRepos() {
+func (book *InMemOrderBook) updateRepos() {
 	buyOrderRepo := repository.GetBuyOrderRepo()
 	buyOrderRepo.UpdateAll(book.BuyOrders)
 
